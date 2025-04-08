@@ -5,6 +5,7 @@ import 'splash.dart';
 import 'vacaciones.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../Common/commonFunctions.dart';
+import 'OnboardingScreen/Onboarding_Screen.dart';
 
 /// Conviertes el main en async
 /*void*/Future<void>  main() async {
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const SplashScreen(),
+      home: OnboardingScreen(), // Cambiar a const SplashScreen() para la pantalla de carga
     );
   }
 }
