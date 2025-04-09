@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../Login/login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   @override
@@ -25,8 +26,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   void _skipOnboarding() {
-    // Lógica para omitir el onboarding
-    print('Onboarding omitido');
+    // Navegar directamente a la pantalla de login
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+    );
   }
 
   void _nextPage() {
@@ -36,7 +40,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      print('Navegar a la siguiente pantalla');
+      // Navegar a la pantalla de login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
     }
   }
 
@@ -73,6 +81,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           SafeArea(
             child: Column(
               children: [
+                // Barra indicadora
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    _onboardingData.length,
+                    (index) => AnimatedContainer(
+                      duration: Duration(milliseconds: 300),
+                      margin: EdgeInsets.symmetric(horizontal: 4),
+                      width: _currentPage == index ? 16 : 8, // Indicador más grande para la pantalla actual
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _currentPage == index ? Colors.white : Colors.grey,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
                 // Contenido del onboarding
                 Expanded(
                   child: PageView.builder(
