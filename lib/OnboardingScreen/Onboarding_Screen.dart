@@ -24,10 +24,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     },
   ];
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+  void _skipOnboarding() {
+    // Lógica para omitir el onboarding
+    print('Onboarding omitido');
   }
 
   void _nextPage() {
@@ -41,8 +40,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  void _skipOnboarding() {
-    print('Omitir onboarding');
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -54,14 +55,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Positioned.fill(
             child: Stack(
               children: [
-                Image.asset(
-                  'assets/image.png', // Ruta de tu imagen
-                  fit: BoxFit.cover, // Asegura que ocupe toda la pantalla
-                  width: double.infinity,
-                  height: double.infinity,
+                Transform.scale(
+                  scale: 1.5, // Escala la imagen un 50% más grande
+                  child: Image.asset(
+                    'assets/image.png', // Ruta de tu imagen
+                    fit: BoxFit.cover, // Asegura que ocupe toda la pantalla
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
                 ),
                 Container(
-                  color: Colors.black.withOpacity(0.4), // Opacidad del 60%
+                  color: Colors.black.withOpacity(0.2), // Opacidad del 60%
                 ),
               ],
             ),
@@ -85,7 +89,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: Center(
                           child: Text(
                             _onboardingData[index]['title']!,
-                            textAlign: TextAlign.center,
+                            textAlign: TextAlign.left, // Alinea el texto a la izquierda
                             style: TextStyle(
                               fontSize: 28,
                               color: Colors.white,
@@ -114,7 +118,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                             padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                           ),
-                          child: Text('Omitir', style: TextStyle(fontSize: 16)),
+                          child: SizedBox(
+                            width: 120, // Ancho fijo para los botones
+                            child: Center(
+                              child: Text('Omitir', style: TextStyle(fontSize: 16)),
+                            ),
+                          ),
                         ),
                       Spacer(),
                       ElevatedButton(
@@ -127,12 +136,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                           padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                         ),
-                        child: Text(
-                          _onboardingData[_currentPage]['buttonText']!,
-                          style: TextStyle(fontSize: 16),
+                        child: SizedBox(
+                          width: _currentPage == _onboardingData.length - 1 ? 200 : 120, // Botón más largo en la última pantalla
+                          child: Center(
+                            child: Text(
+                              _onboardingData[_currentPage]['buttonText']!,
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ),
                         ),
                       ),
-                      if (_currentPage < _onboardingData.length - 1) Spacer(),
                     ],
                   ),
                 ),
@@ -143,10 +156,4 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
     );
   }
-}
-
-void main() {
-  runApp(MaterialApp(
-    home: OnboardingScreen(),
-  ));
 }
