@@ -37,16 +37,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Navegar a la siguiente pantalla después del onboarding
       print('Navegar a la siguiente pantalla');
-      // Navigator.pushReplacement(...);
     }
   }
 
   void _skipOnboarding() {
-    // Navegar a la siguiente pantalla omitiendo el onboarding
     print('Omitir onboarding');
-    // Navigator.pushReplacement(...);
   }
 
   @override
@@ -54,86 +50,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background Image
+          // Imagen de fondo con opacidad
           Positioned.fill(
-            child: Image.asset(
-              'assets/image.png', // Reemplaza con la ruta de tu imagen de fondo
-              fit: BoxFit.contain,
+            child: Stack(
+              children: [
+                Image.asset(
+                  'assets/image.png', // Ruta de tu imagen
+                  fit: BoxFit.cover, // Asegura que ocupe toda la pantalla
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
+                Container(
+                  color: Colors.black.withOpacity(0.4), // Opacidad del 60%
+                ),
+              ],
             ),
           ),
           SafeArea(
             child: Column(
               children: [
-                // Top Section (Status Bar and Progress Bar)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            '••• 9:11',
-                            style: TextStyle(color: Colors.white.withOpacity(0.7)),
-                          ),
-                          Spacer(),
-                          Icon(Icons.signal_cellular_alt, color: Colors.white.withOpacity(0.7)),
-                          SizedBox(width: 8),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(Icons.battery_full, color: Colors.white),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: _currentPage == 0 ? 3 : 1,
-                            child: Container(
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 4),
-                          Expanded(
-                            flex: _currentPage == 1 ? 2 : (_currentPage > 1 ? 2 : 1),
-                            child: Container(
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: Colors.redAccent,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 4),
-                          Expanded(
-                            flex: _currentPage == 2 ? 5 : (_currentPage < 2 ? 5 : 1),
-                            child: Container(
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                // PageView for onboarding content
+                // Contenido del onboarding
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
-                    physics: NeverScrollableScrollPhysics(), // Disable swipe
                     itemCount: _onboardingData.length,
                     onPageChanged: (index) {
                       setState(() {
@@ -158,8 +97,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     },
                   ),
                 ),
-
-                // Bottom Buttons
+                // Botones inferiores
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
