@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: OnboardingScreen(), // Cambiar a const SplashScreen() para la pantalla de carga
+      home: const SplashScreen(), // Cambiar a OnboardingScreen() para la pantalla de carga
     );
   }
 }

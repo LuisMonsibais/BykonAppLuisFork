@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mi_app/Login/login_screen.dart';
+import 'OnboardingScreen/Onboarding_Screen.dart';
 // Importa tu main.dart para acceder a HomeScreen
 // Ajusta la ruta si estás en otra carpeta
 
@@ -21,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const LoginScreen(), 
+          builder: (context) => OnboardingScreen(), 
         ),
       );
     });

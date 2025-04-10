@@ -136,7 +136,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     children: [
                       if (_currentPage < _onboardingData.length - 1)
                         SizedBox(
-                          width: 120, // Ancho fijo para el botón "Omitir"
+                          width: 140, // Ancho fijo para el botón "Omitir"
                           child: OutlinedButton(
                             onPressed: _skipOnboarding,
                             style: OutlinedButton.styleFrom(
@@ -153,10 +153,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                       if (_currentPage < _onboardingData.length - 1)
-                        SizedBox(width: 16), // Espaciado entre los botones "Omitir" y "Siguiente"
+                        SizedBox(width: 12), // Espaciado ligero entre los botones
                       if (_currentPage < _onboardingData.length - 1)
                         SizedBox(
-                          width: 120, // Ancho fijo para el botón "Siguiente"
+                          width: 140, // Ancho fijo para el botón "Siguiente"
                           child: ElevatedButton(
                             onPressed: _nextPage,
                             style: ElevatedButton.styleFrom(
