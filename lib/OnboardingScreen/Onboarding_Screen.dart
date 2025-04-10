@@ -64,7 +64,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Stack(
               children: [
                 Transform.scale(
-                  scale: 1.5, // Escala la imagen un 50% más grande
+                  scale: 1.8, // Escala la imagen un 80% más grande
                   child: Image.asset(
                     'assets/image.png', // Ruta de tu imagen
                     fit: BoxFit.cover, // Asegura que ocupe toda la pantalla
@@ -73,7 +73,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
                 Container(
-                  color: Colors.black.withOpacity(0.2), // Opacidad del 60%
+                  color: Colors.black.withOpacity(0.7), // Opacidad del 70%
                 ),
               ],
             ),
@@ -90,7 +90,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       duration: Duration(milliseconds: 300),
                       margin: EdgeInsets.symmetric(horizontal: 4),
                       width: _currentPage == index ? 16 : 8, // Indicador más grande para la pantalla actual
-                      height: 8,
+                      height: 8, // Altura fija para todos los indicadores
                       decoration: BoxDecoration(
                         color: _currentPage == index ? Colors.white : Colors.grey,
                         borderRadius: BorderRadius.circular(4),
@@ -130,7 +130,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: _currentPage == _onboardingData.length - 1
+                        ? MainAxisAlignment.center // Centra el botón "Empezar" en la última pantalla
+                        : MainAxisAlignment.spaceBetween, // Espaciado normal para las primeras pantallas
                     children: [
                       if (_currentPage < _onboardingData.length - 1)
                         OutlinedButton(
@@ -150,27 +152,50 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                           ),
                         ),
-                      Spacer(),
-                      ElevatedButton(
-                        onPressed: _nextPage,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
+                      if (_currentPage < _onboardingData.length - 1)
+                        SizedBox(width: 16), // Espaciado entre los botones "Omitir" y "Siguiente"
+                      if (_currentPage < _onboardingData.length - 1)
+                        ElevatedButton(
+                          onPressed: _nextPage,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                           ),
-                          padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                        ),
-                        child: SizedBox(
-                          width: _currentPage == _onboardingData.length - 1 ? 200 : 120, // Botón más largo en la última pantalla
-                          child: Center(
-                            child: Text(
-                              _onboardingData[_currentPage]['buttonText']!,
-                              style: TextStyle(fontSize: 16),
+                          child: SizedBox(
+                            width: 120, // Ancho fijo para los botones
+                            child: Center(
+                              child: Text(
+                                _onboardingData[_currentPage]['buttonText']!,
+                                style: TextStyle(fontSize: 16),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      if (_currentPage == _onboardingData.length - 1)
+                        ElevatedButton(
+                          onPressed: _nextPage,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                          ),
+                          child: SizedBox(
+                            width: 200, // Botón más largo en la última pantalla
+                            child: Center(
+                              child: Text(
+                                'Empezar',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
