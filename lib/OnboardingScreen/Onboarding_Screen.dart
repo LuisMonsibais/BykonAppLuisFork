@@ -145,7 +145,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     children: [
                       if (_currentPage < _onboardingData.length - 1)
                         SizedBox(
-                          width: 180,
+                          width: 160,
                           child: OutlinedButton(
                             onPressed: _skipOnboarding,
                             style: OutlinedButton.styleFrom(
@@ -165,7 +165,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         SizedBox(width: 12),
                       if (_currentPage < _onboardingData.length - 1)
                         SizedBox(
-                          width: 180,
+                          width: 160,
                           child: ElevatedButton(
                             onPressed: _nextPage,
                             style: ElevatedButton.styleFrom(
