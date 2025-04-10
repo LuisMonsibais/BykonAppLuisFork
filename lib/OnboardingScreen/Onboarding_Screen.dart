@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../Login/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatefulWidget {
   @override
@@ -25,22 +26,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     },
   ];
 
-  void _skipOnboarding() {
-    // Navegar directamente a la pantalla de login
+  void _skipOnboarding() async {
+    // Guarda el estado en SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasSeenOnboarding', true);
+
+    // Navega directamente a la pantalla de Login
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => LoginScreen()),
     );
   }
 
-  void _nextPage() {
+  void _nextPage() async {
     if (_currentPage < _onboardingData.length - 1) {
       _pageController.nextPage(
         duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {
-      // Navegar a la pantalla de login
+      // Guarda el estado en SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('hasSeenOnboarding', true);
+
+      // Navega a la pantalla de Login
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -59,21 +68,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Imagen de fondo con opacidad
           Positioned.fill(
             child: Stack(
               children: [
                 Transform.scale(
-                  scale: 1.8, // Escala la imagen un 80% más grande
+                  scale: 1.8,
                   child: Image.asset(
-                    'assets/image.png', // Ruta de tu imagen
-                    fit: BoxFit.cover, // Asegura que ocupe toda la pantalla
+                    'assets/image.png',
+                    fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
                   ),
                 ),
                 Container(
-                  color: Colors.black.withOpacity(0.7), // Opacidad del 70%
+                  color: Colors.black.withOpacity(0.7),
                 ),
               ],
             ),
@@ -89,16 +97,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     (index) => AnimatedContainer(
                       duration: Duration(milliseconds: 300),
                       margin: EdgeInsets.symmetric(horizontal: 4),
-                      width: _currentPage == index ? 16 : 8, // Indicador más grande para la pantalla actual
-                      height: 8, // Altura fija para todos los indicadores
+                      width: 110, // Longitud de las barras indicadoras
+                      height: 8, // Altura fija para las barras
                       decoration: BoxDecoration(
-                        color: _currentPage == index ? Colors.white : Colors.grey,
-                        borderRadius: BorderRadius.circular(4),
+                        color: _currentPage == index
+                            ? Colors.red
+                            : Colors.white.withOpacity(0.5), // Rojo para la barra activa
+                        borderRadius: BorderRadius.circular(4), // Bordes redondeados
                       ),
                     ),
                   ),
                 ),
-                // Contenido del onboarding
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
@@ -110,11 +119,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     },
                     itemBuilder: (context, index) {
                       return Padding(
-                        padding: const EdgeInsets.all(32.0),
-                        child: Center(
+                        padding: const EdgeInsets.only(left: 16.0, right: 32.0), // Ajusta el padding para pegar el texto a la izquierda
+                        child: Align(
+                          alignment: Alignment.centerLeft, // Alinea el texto a la izquierda
                           child: Text(
                             _onboardingData[index]['title']!,
-                            textAlign: TextAlign.left, // Alinea el texto a la izquierda
+                            textAlign: TextAlign.start, // Alinea el texto a la izquierda
                             style: TextStyle(
                               fontSize: 28,
                               color: Colors.white,
@@ -126,17 +136,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     },
                   ),
                 ),
-                // Botones inferiores
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
                     mainAxisAlignment: _currentPage == _onboardingData.length - 1
-                        ? MainAxisAlignment.center // Centra el botón "Empezar" en la última pantalla
-                        : MainAxisAlignment.spaceBetween, // Espaciado normal para las primeras pantallas
+                        ? MainAxisAlignment.center
+                        : MainAxisAlignment.spaceBetween,
                     children: [
                       if (_currentPage < _onboardingData.length - 1)
                         SizedBox(
-                          width: 140, // Ancho fijo para el botón "Omitir"
+                          width: 180,
                           child: OutlinedButton(
                             onPressed: _skipOnboarding,
                             style: OutlinedButton.styleFrom(
@@ -153,10 +162,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                       if (_currentPage < _onboardingData.length - 1)
-                        SizedBox(width: 12), // Espaciado ligero entre los botones
+                        SizedBox(width: 12),
                       if (_currentPage < _onboardingData.length - 1)
                         SizedBox(
-                          width: 140, // Ancho fijo para el botón "Siguiente"
+                          width: 180,
                           child: ElevatedButton(
                             onPressed: _nextPage,
                             style: ElevatedButton.styleFrom(
@@ -177,7 +186,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       if (_currentPage == _onboardingData.length - 1)
                         SizedBox(
-                          width: 200, // Botón más largo en la última pantalla
+                          width: 290,
                           child: ElevatedButton(
                             onPressed: _nextPage,
                             style: ElevatedButton.styleFrom(
