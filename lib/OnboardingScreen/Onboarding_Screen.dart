@@ -135,18 +135,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         : MainAxisAlignment.spaceBetween, // Espaciado normal para las primeras pantallas
                     children: [
                       if (_currentPage < _onboardingData.length - 1)
-                        OutlinedButton(
-                          onPressed: _skipOnboarding,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: BorderSide(color: Colors.white, width: 1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
+                        SizedBox(
+                          width: 120, // Ancho fijo para el botón "Omitir"
+                          child: OutlinedButton(
+                            onPressed: _skipOnboarding,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: BorderSide(color: Colors.white, width: 1),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                             ),
-                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                          ),
-                          child: SizedBox(
-                            width: 120, // Ancho fijo para los botones
                             child: Center(
                               child: Text('Omitir', style: TextStyle(fontSize: 16)),
                             ),
@@ -155,18 +155,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       if (_currentPage < _onboardingData.length - 1)
                         SizedBox(width: 16), // Espaciado entre los botones "Omitir" y "Siguiente"
                       if (_currentPage < _onboardingData.length - 1)
-                        ElevatedButton(
-                          onPressed: _nextPage,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
+                        SizedBox(
+                          width: 120, // Ancho fijo para el botón "Siguiente"
+                          child: ElevatedButton(
+                            onPressed: _nextPage,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                             ),
-                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                          ),
-                          child: SizedBox(
-                            width: 120, // Ancho fijo para los botones
                             child: Center(
                               child: Text(
                                 _onboardingData[_currentPage]['buttonText']!,
@@ -176,18 +176,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                       if (_currentPage == _onboardingData.length - 1)
-                        ElevatedButton(
-                          onPressed: _nextPage,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
+                        SizedBox(
+                          width: 200, // Botón más largo en la última pantalla
+                          child: ElevatedButton(
+                            onPressed: _nextPage,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                             ),
-                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                          ),
-                          child: SizedBox(
-                            width: 200, // Botón más largo en la última pantalla
                             child: Center(
                               child: Text(
                                 'Empezar',
