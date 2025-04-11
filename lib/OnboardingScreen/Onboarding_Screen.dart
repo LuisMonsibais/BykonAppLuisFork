@@ -13,7 +13,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, String>> _onboardingData = [
     {
-      'title': 'Con la nueva\napp de ByKon,\nponemos al área\nde RH en la\npalma de tu\nmano',
+      'title': 'Con la nueva\nByKon App,\nponemos al área\nde RH en la\npalma de tu\nmano',
       'buttonText': 'Siguiente',
     },
     {
