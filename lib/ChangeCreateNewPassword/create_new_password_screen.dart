@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mi_app/Login/login_screen.dart';
+import 'package:mi_app/Object/User.dart';
 import '../Common/commonFunctions.dart';
-import 'create_new_password_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../main.dart'; 
+import '../APIService/api_service.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env"); // Cargar variables de entorno
@@ -27,8 +28,8 @@ String userCode = '';
 
   bool _newPasswordVisible = false;
   bool _confirmPasswordVisible = false;
+  bool _hasInteractedWithConfirmPassword = false;
   bool _hasInteractedWithNewPassword = false;
-
 //_ChangePasswordScreenState();
 
   @override
@@ -51,13 +52,14 @@ String userCode = '';
   void _onFieldChange() {
     // Cada vez que cambian los campos, se reconstruye la UI
     setState(() {
-      _hasInteractedWithNewPassword = true; 
+      _hasInteractedWithConfirmPassword = true; 
+      _hasInteractedWithNewPassword = true;
     });
   }
     
     // Verifica si el password es una formula-bien-formada
    bool get _allFieldsFilled =>
-     _newPasswordController.text.isNotEmpty && CommonFunctions.isValidPassword(_newPasswordController.text); 
+     _newPasswordController.text.isNotEmpty && CommonFunctions.isValidPassword(_newPasswordController.text) ; 
   // Verifica si ambos passwords coinciden
   bool get arePasswordsEqual =>
     _newPasswordController.text == _confirmPasswordController.text;
@@ -95,6 +97,9 @@ String userCode = '';
 
     // Determinar si el password no es vacio y está bien formado
     final bool allFieldsFilled = _allFieldsFilled;
+
+    // Validar si la contraseña es válida
+    final bool isPasswordValid = CommonFunctions.isValidPassword(_newPasswordController.text);
 
     // Definir los colores actuales del botón según estado
     final Color currentButtonColor = allFieldsFilled && arePasswordsEqual? buttonActiveColor : buttonInactiveColor;
@@ -164,7 +169,8 @@ return Scaffold(
                                 ),
                               ),
 
-                              // Campo: nueva contraseña
+
+                              // Campo: nueva contraseña                              
                               Container(
                                 height: 90.0,
                                 margin: const EdgeInsets.only(bottom: 8.0),
@@ -188,7 +194,7 @@ return Scaffold(
                                           hintText: 'abj162@',
                                           hintStyle: TextStyle(color: Colors.white70, fontSize: 18),
                                         ),
-                                                                            onChanged: (value) {
+                                    onChanged: (value) {
                                       setState(() {
                                         _hasInteractedWithNewPassword = true;
                                       });
@@ -211,22 +217,39 @@ return Scaffold(
                                   ],
                                 ),
                               ),
-                              if (_hasInteractedWithNewPassword && _newPasswordController.text.length>5 && !_allFieldsFilled)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0),
-                                      child: Row(
-                                        children: const [
-                                          Icon(Icons.info_outline, color: Colors.white70, size: 16),
-                                          SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              'Debe tener una mayúscula, al menos 8 caracteres, mínimo un número y un carácter especial (“@#%)',
-                                              style: TextStyle(color:  Color(0xFFFFE5EA), fontSize: 14),
-                                            ),
+                             // if (_hasInteractedWithNewPassword && _newPasswordController.text.length > 5 && !_allFieldsFilled)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0),
+                                    child: Row(
+                                      children: [
+                                         Icon(
+                                              !_hasInteractedWithNewPassword && _newPasswordController.text.length<8
+                                                  ? Icons.info_outline // Si la contraseña es válida, muestra el ícono de check
+                                                  : (isPasswordValid ) //(!_hasInteractedWithConfirmPassword && !isPasswordValid) 
+                                                      ? Icons.check // Si no ha interactuado y la contraseña no es válida, muestra el ícono de peligro
+                                                      : Icons.warning, // De lo contrario, muestra el ícono de información
+                                              color: !_hasInteractedWithNewPassword && _newPasswordController.text.length<8
+                                                  ? Colors.white70 // Si la contraseña es válida, el color será verde  
+                                                  : (isPasswordValid) //(!_hasInteractedWithConfirmPassword && !isPasswordValid) 
+                                                      ? Colors.green // Si no ha interactuado y la contraseña no es válida, el color será rojo
+                                                      : Colors.red,
+                                              size: 16),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            'Debe tener una mayúscula, 8 caracteres mínimo con letras y números y un caracter especial (“@#)',
+                                            style: TextStyle(  
+                                                color: !_hasInteractedWithNewPassword  && _newPasswordController.text.length<8
+                                                  ? Colors.white // Si la contraseña es válida, el texto será verde
+                                                  : (isPasswordValid) 
+                                                      ? Color(0xFFD9FFEC) // Si no ha interactuado y la contraseña no es válida, el texto será rojo
+                                                      : Colors.red, // De lo contrario, el texto será blanco
+                                              fontSize: 14),
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
+                                  ),
                               // Campo: Confirmar contraseña
                               Container(
                                 height: 90.0,
@@ -251,6 +274,11 @@ return Scaffold(
                                           hintText: 'abj162@',
                                           hintStyle: TextStyle(color: Colors.white70, fontSize: 18),
                                         ),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _hasInteractedWithConfirmPassword = true;
+                                      });
+                                    },
                                       ),
                                     ),
                                     IconButton(
@@ -269,28 +297,36 @@ return Scaffold(
                                   ],
                                 ),
                               ),
- 
+                               if (_hasInteractedWithConfirmPassword && _confirmPasswordController.text.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          arePasswordsEqual ? Icons.check_circle : Icons.warning, // Ícono dinámico
+                                          color: arePasswordsEqual ? const Color(0xFF36B274) : Colors.red, // Color dinámico
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            arePasswordsEqual
+                                                ? 'Las contraseñas coinciden.'
+                                                : 'La contraseña no coincide.',
+                                            style: TextStyle(
+                                              color: arePasswordsEqual ? const Color(0xFFD9FFEC) : Colors.red, // Color dinámico
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                             ],
                           ),
                         ),
                       ),
-                      // Mostrar cuadro de texto si las contraseñas no coinciden
-                        if (_hasInteractedWithNewPassword && _confirmPasswordController.text.length>5 && !arePasswordsEqual)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 5.0, left: 32.0),
-                            child: Row(
-                              children: const [
-                                Icon(Icons.warning, color: Colors.red, size: 16),
-                                SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'La contraseña no coincide.',
-                                    style: TextStyle(color: Color(0xFFFFE5EA), fontSize: 14),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+
                       // 2) Botón “Guardar nueva contraseña” al final, dentro del contenedor negro
                       Padding(
                         padding: const EdgeInsets.only(left: 24.0,right: 24.0, bottom: 10.0),
@@ -308,37 +344,16 @@ return Scaffold(
                             // El botón siempre tiene onPressed,
                             // pero si no están los campos llenos => SnackBar
                             onPressed: () async {
-                              if (!allFieldsFilled) {
-                                // Mostrar SnackBar: faltan datos
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Row(
-                                      children: const [
-                                        Icon(Icons.warning, color: Color.fromARGB(255, 255, 219, 166)),
-                                        SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text('Por favor, llena la contraseña correctamente'),
-                                        ),
-                                      ],
-                                    ),
-                                    backgroundColor: const Color(0xFF4D4D4D), // Fondo negro como en la imagen
-                                    behavior: SnackBarBehavior.floating, 
-                                        margin: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 20.0), // Centrar horizontalmente y ajustar verticalmente
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
-                                        ),// Flotante como en la imagen
-                                  ),
-                                );
-                              } else {
-//--------------------------------------------------------------------------
-                      if(arePasswordsEqual){
+                        final apiService = ApiService();      
+                         //--------------------------------------------------------------------------     
+                        if (allFieldsFilled && arePasswordsEqual) { //ambos campos de contraseña llenos y coinciden                                            
+                           //si user es nul => venimos de ResetPassw(usamos reset-password/v1/vslidate-change) y navegamos a Login
+                            if (User.instancia == null){
                               final sendChangePassword = await 
-                                                SendChangePassword.changePassword(
-                                                  widget.token,widget.userCode, _newPasswordController.text
-                                                );
-                                      if (sendChangePassword != null) {     
-                                            // Mostrar SnackBar de éxito
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                apiService.passwordChange(
+                                  widget.token,widget.userCode, _newPasswordController.text);
+                                  //Se pudo cambiar el password desde ResetPassw navega a Login
+                                      ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
                                             content: Row(
                                               children: [
@@ -346,8 +361,16 @@ return Scaffold(
                                                 const SizedBox(width: 8),
                                                 Expanded(
                                                   child: Text(
-                                                   sendChangePassword.message, //'Contraseña guardada con éxito.',
-                                                    style: const TextStyle(color: Colors.white),
+                                                    !sendChangePassword!.containsKey('error') 
+                                                        ? sendChangePassword['message'] // Si no contiene error, muestra el mensaje
+                                                        : 'Algo salió mal. Inténtalo de nuevo en unos momentos.', // Si contiene error, muestra este mensaje
+                                                        style:  TextStyle(
+                                                          color: !sendChangePassword.containsKey('error') 
+                                                              ? Color(0xFFD9FFEC) // Color verde
+                                                              : Color(0xFFFFE5EA), // Color rojo
+                                                          fontSize: 16,
+                                                            
+                                                    ),
                                                   ),
                                                 ),
                                               ],
@@ -359,42 +382,88 @@ return Scaffold(
                                                   borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
                                                 ),// Flotante como en la imagen
                                           ),
-                                        );                            
-                                // Están completos => navegamos a Home                          
-                                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                                    Navigator.pushReplacement(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) => LoginScreen(),
-                                                      ),
-                                                    );
-                                                }
-                                               );
-                                              } else {
-                                                //no se pudo cambiar la contraseña
-                                                 ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(
-                                                      content: Row(
-                                                        children: const [
-                                                          Icon(Icons.warning, color: Colors.red, size: 16),
-                                                          SizedBox(width: 8),
-                                                          Expanded(
-                                                            child: Text('No se pudo guardar la contraseña. Inténtalo más tarde'),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      backgroundColor: const Color(0xFF4D4D4D), // Fondo negro como en la imagen
-                                                      behavior: SnackBarBehavior.floating, 
-                                                          margin: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 20.0), // Centrar horizontalmente y ajustar verticalmente
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
-                                                          ),// Flotante como en la imagen
+                                        ); 
+                                      if (!sendChangePassword.containsKey('error')) {//Si se pudo cambiar la contraseña viniendo de ResetPassw avanzamos a Login
+                                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => LoginScreen(),
+                                              ),
+                                            );
+                                          }
+                                       );
+                                   }
+                            } else {//user != null => venimos de LoginPrimeraVez(usamos change-password/v1/validate-change) y navegamos a Home
+                              final sendChangePassword = await 
+                                apiService.validateChangePassword(widget.token, widget.userCode, _newPasswordController.text);
+                                  //Se pudo cambiar el password desde LoginPrimeraVez navega a Home
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Row(
+                                              children: [
+                                                const Icon(Icons.check_circle, color: Colors.green),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    !sendChangePassword!.containsKey('error') 
+                                                        ? sendChangePassword['message'] // Si no contiene error, muestra el mensaje
+                                                        : 'Algo salió mal. Inténtalo de nuevo en unos momentos.', // Si contiene error, muestra este mensaje
+                                                        style:  TextStyle(
+                                                          color: !sendChangePassword.containsKey('error') 
+                                                              ? Color(0xFFD9FFEC) // Color verde
+                                                              : Color(0xFFFFE5EA), // Color rojo
+                                                          fontSize: 16,
+                                                            
                                                     ),
-                                                  );
-                                              }
-                                         } 
-                                            }
-                                          },
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            backgroundColor: const Color(0xFF4D4D4D), // Fondo negro como en la imagen
+                                            behavior: SnackBarBehavior.floating, 
+                                                margin: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 20.0), // Centrar horizontalmente y ajustar verticalmente
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
+                                                ),// Flotante como en la imagen
+                                          ),
+                                        ); 
+                                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                                              Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => HomeScreen(                                                          
+                                                    name: User.instancia?.fullName ?? '',
+                                                    jobPosition: User.instancia?.jobPosition ?? '',
+                                                  ),
+                                                ),
+                                              );
+                                          }
+                                         );                                        
+                            }
+
+                        } else {//ambos campos de contraseña están vacíos o no coinciden                                            
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: const [
+                                  Icon(Icons.warning, color: Colors.red, size: 16),
+                                  SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text('Este campo es requerido.'),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: const Color(0xFF4D4D4D), // Fondo negro como en la imagen
+                              behavior: SnackBarBehavior.floating, 
+                                  margin: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 20.0), // Centrar horizontalmente y ajustar verticalmente
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
+                                  ),// Flotante como en la imagen
+                            ),
+                          );
+                        }
+                    },
 //--------------------------------------------------------------------------       
                             child: Text(
                               'Guardar nueva contraseña',
@@ -475,9 +544,6 @@ return Scaffold(
       ),
     );
   }
-
-
   
 }
-
 

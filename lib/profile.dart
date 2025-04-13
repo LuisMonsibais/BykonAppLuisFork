@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mi_app/Object/User.dart';
 import 'Common/commonFunctions.dart';
+import 'package:mi_app/Object/User.dart';
+import 'Common/commonFunctions.dart';
 import 'configuration.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -119,7 +121,7 @@ class ProfileScreen extends StatelessWidget {
                             User.instancia?.jobPosition ?? 'job',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 16,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

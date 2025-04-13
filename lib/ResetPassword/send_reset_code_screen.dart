@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mi_app/VerificationCode/verification_code_screen.dart';
 import '../Common/commonFunctions.dart';
 import '../APIService/api_service.dart';
-
+import '../APIService/ApiLoginError.dart';
 
 class ResetCodeScreen extends StatefulWidget {
   const ResetCodeScreen({super.key});
@@ -16,6 +16,7 @@ class _ResetCodeScreenState extends State<ResetCodeScreen> {
 final TextEditingController _emailController = TextEditingController();
 ///Users/vn55iez/BykonApp/mi_app/lib/VerificationCode/verification_code_screen.dart
   bool _showErrorMessage = false;
+  String _errorMessage = '';
   bool _hasInteractedWithEmail = false;
 
   @override
@@ -32,7 +33,10 @@ final TextEditingController _emailController = TextEditingController();
 
   void _onFieldChange() {
     // Cada vez que cambian los campos, se reconstruye la UI
-    setState(() {_showErrorMessage = false;_hasInteractedWithEmail = true; });
+    setState(() {
+    _errorMessage = '';
+    _hasInteractedWithEmail = true; 
+    _showErrorMessage  = false;});
   }
     
     // Verifica si el correo es una formula-bien-formada
@@ -75,6 +79,15 @@ final TextEditingController _emailController = TextEditingController();
     // Definir los colores actuales del botón según estado
     final Color currentButtonColor = emailFieldWellDoneFilled ? buttonActiveColor : buttonInactiveColor;
     final Color currentButtonTextColor = emailFieldWellDoneFilled ? buttonActiveTextColor : buttonInactiveTextColor;
+
+if (_hasInteractedWithEmail && _emailController.text.length>8 && !_isMailWellDone)
+{
+      setState(() {
+      _showErrorMessage  = true;
+      _errorMessage = 'Verifica que tu correo sea correcto e inténtalo de nuevo.';
+    });
+}
+
 return Scaffold(
       // El fondo degradado ocupa toda la pantalla
       body: Container(
@@ -182,17 +195,17 @@ return Scaffold(
                                 ),
                               ),
                               ///Validación de correo bien formado
-                              if (_hasInteractedWithEmail && _emailController.text.length>5 && !_isMailWellDone)
+                              if (_showErrorMessage)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 8.0, left: 20.0),
                                     child: Row(
-                                      children: const [
-                                        Icon(Icons.warning, color: Colors.red, size: 16),
-                                        SizedBox(width: 8),
+                                      children: [
+                                        const Icon(Icons.warning, color: Colors.red, size: 16),
+                                        const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
-                                            'Correo inválido.',
-                                            style: TextStyle(color: Color(0xFFFFCCD4), fontSize: 14),
+                                            _errorMessage,
+                                            style: const TextStyle(color: Color(0xFFFFCCD4), fontSize: 14),
                                           ),
                                         ),
                                       ],
@@ -245,10 +258,11 @@ return Scaffold(
                              final sendResetCodeResponse = await apiService.resetPassword(
                                                   _emailController.text
                                                 );
-                                    if (sendResetCodeResponse != null) {     
+                                    if (!sendResetCodeResponse!.containsKey( 'error')) {     
                                          setState(() {
-                                               _showErrorMessage = false;
+                                               _showErrorMessage = false;                                               
                                             });    
+                                          _errorMessage ='';        
                                 // Están completos => navegamos a SetCodeVerificationScreen
                                                 WidgetsBinding.instance.addPostFrameCallback((_) {
                                                     Navigator.pushReplacement(
@@ -264,18 +278,23 @@ return Scaffold(
                                                 }
                                                );
                                               } else {
-                                                //no se pudo enviar el codigo
-                                                setState(() {
-                                                  _showErrorMessage = true;
-                                                });
-                                                 ScaffoldMessenger.of(context).showSnackBar(
+                                                final int responseStatusCode = sendResetCodeResponse['error'];
+                                                _errorMessage= handleLoginError(responseStatusCode);
+                                                _showErrorMessage = false;
+                                                // email inactivo o invalid                                            
+                                                    if(responseStatusCode == 452 || responseStatusCode == 550){ 
+                                                      setState(() {
+                                                        _showErrorMessage = true;
+                                                      });
+                                                    } else { //no se pudo enviar el codigo o error desconocido
+                                                        ScaffoldMessenger.of(context).showSnackBar(
                                                     SnackBar(
                                                       content: Row(
                                                         children: const [
                                                           Icon(Icons.warning, color: Colors.red, size: 16),
                                                           SizedBox(width: 8),
                                                           Expanded(
-                                                            child: Text('No se pudo enviar el código. Inténtalo más tarde'),
+                                                            child: Text('Algo salió mal al enviarte el código de verificación. Inténtalo de nuevo.'),
                                                           ),
                                                         ],
                                                       ),
@@ -287,6 +306,7 @@ return Scaffold(
                                                           ),// Flotante como en la imagen
                                                     ),
                                                   );
+                                                    }
                                               }
                                             }
                                           },

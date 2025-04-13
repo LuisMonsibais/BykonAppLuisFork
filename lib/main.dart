@@ -218,7 +218,7 @@ class HomeScreen extends StatelessWidget {
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
-                          'Próximos eventos',
+                          'Próximos Eventos',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 24,

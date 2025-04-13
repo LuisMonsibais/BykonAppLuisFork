@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mi_app/Object/User.dart';
+import 'package:mi_app/VerificationCode/verification_code_screen.dart';
 import '../ResetPassword/send_reset_code_screen.dart';
 import '../main.dart'; // Ajusta la ruta a donde tengas tu HomeScreen
 import '../Common/commonFunctions.dart';
 import '../APIService/api_service.dart';
+import '../APIService/ApiLoginError.dart';
+
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env"); // Cargar variables de entorno
@@ -24,7 +28,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _passwordVisible = false;
   bool _rememberMe = true;
-  bool _showErrorMessage = false;
+  bool _showErrorMessagePassword = false;
+  bool _showErrorMessageEmail = false;
+  String _errorMessage = '';
   bool _hasInteractedWithEmail = false;
 
 
@@ -47,12 +53,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
     super.dispose();
   }
-///Users/vn55iez/BykonApp/mi_app/lib/main.dart
+
   void _onFieldChange() {
 
     // Cada vez que cambian los campos, se reconstruye la UI
     setState(() {
-      _showErrorMessage = false;
+      _errorMessage = '';
+      _showErrorMessagePassword = false;
+      _showErrorMessageEmail  = false;
       _hasInteractedWithEmail = true; });
   }
 
@@ -105,9 +113,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
    final bool emailFieldWellDoneFilled = _isMailWellDone;
 
+
     // Definir los colores actuales del botón según estado
     final Color currentButtonColor = allFieldsFilled && emailFieldWellDoneFilled ? buttonActiveColor : buttonInactiveColor;
     final Color currentButtonTextColor = allFieldsFilled && emailFieldWellDoneFilled? buttonActiveTextColor : buttonInactiveTextColor;
+
+  if (_hasInteractedWithEmail && _emailController.text.length > 8 && !emailFieldWellDoneFilled) {
+    setState(() {
+      _showErrorMessageEmail  = true;
+      _errorMessage = 'Verifica que tu correo sea correcto e inténtalo de nuevo.';
+    });
+  }
 
     return Scaffold(
       // El fondo degradado ocupa toda la pantalla
@@ -125,12 +141,12 @@ class _LoginScreenState extends State<LoginScreen> {
               // -----------------------------------------------------------------
               // PARTE SUPERIOR: Logo grande con espacio
               // -----------------------------------------------------------------
-              const SizedBox(height: 25),
+              const SizedBox(height: 15),//25
               Image.asset(
                 'assets/ByKon Logo.png',
                 width: 240, // Logo grande
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),//20
 
               // -----------------------------------------------------------------
               // PARTE INFERIOR: Contenedor negro con formulario + botón
@@ -201,19 +217,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                     },
                                 ),
                               ),
-                              //Control de correo mal escrito
-//____________________________________________________________________________________                              
-                              if (_hasInteractedWithEmail && _emailController.text.length>5 && !emailFieldWellDoneFilled)
-                                  Padding(
+                              
+//_______________________________________//Control de correo mal escrito_____________________________________________     
+                        if (_showErrorMessageEmail)//if (_errorMessage.isNotEmpty)                               
+                            Padding(
                                     padding: const EdgeInsets.only(bottom: 5.0, left: 20.0),
                                     child: Row(
-                                      children: const [
-                                        Icon(Icons.warning, color: Colors.red, size: 16),
-                                        SizedBox(width: 8),
+                                      children: [
+                                        const Icon(Icons.warning, color: Colors.red, size: 16),
+                                        const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
-                                            'Correo inválido.',
-                                            style: TextStyle(color: Color(0xFFFFCCD4), fontSize: 14),
+                                            _errorMessage, //'Verifica que tu correo sea correcto e inténtalo de nuevo.'
+                                            style: const TextStyle(color: Color(0xFFFFCCD4), fontSize: 14),
                                           ),
                                         ),
                                       ],
@@ -262,17 +278,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                     // Cuadro de texto para el mensaje de error de contraseña inc
-                                if (_showErrorMessage)
+                                if (_showErrorMessagePassword)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 8.0, left: 10.0),
                                     child: Row(
-                                      children: const [
-                                        Icon(Icons.warning, color: Colors.red, size: 16),
-                                        SizedBox(width: 8),
+                                      children: [
+                                        const Icon(Icons.warning, color: Colors.red, size: 16),
+                                        const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
-                                            'Verifica que tu contraseña sea correcta e inténtalo de nuevo.',
-                                            style: TextStyle(color: Color(0xFFFFCCD4), fontSize: 14),
+                                            _errorMessage,
+                                            style: const TextStyle(color: Color(0xFFFFCCD4), fontSize: 14),
                                           ),
                                         ),
                                       ],
@@ -371,15 +387,43 @@ class _LoginScreenState extends State<LoginScreen> {
                               } else {
                                 final apiService = ApiService();
 //--------------------------------------------------------------------------
-                                      final loginResponse = await apiService.login(            
-                                       _emailController.text,
-                                       _passwordController.text
-                                                );
-                                      if (loginResponse != null) {        
-                                          setState(() {
-                                              _showErrorMessage = false;
-                                            });                                 
-                                // Están completos => navegamos a Home
+                                final loginResponse = await apiService.login(            
+                                 _emailController.text,
+                                 _passwordController.text
+                                          );
+                                if (!loginResponse!.containsKey('error')) {//if loginResponse no tiene error => evalua si es primera o segunda vez
+                                        
+                                    setState(() { 
+                                      _showErrorMessagePassword = false; });
+                                       _errorMessage ='';
+                                    final rememberChangePassword = User.instancia?.rememberChangePassword;                                       
+                                    if (rememberChangePassword == true) {//EsLogin por primera vez =>generateCodeChangePassword
+                                        final generateCodeResponse = await apiService.generateCodeChangePassword();
+                                          if (!generateCodeResponse!.containsKey('error')) {
+                                             // Navegar a la pantalla ChangePasswordScreen
+                                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                                    Navigator.pushReplacement(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) => SetCodeVerificationScreen(
+                                                          email: _emailController.text,
+                                                          token: generateCodeResponse['token'],
+                                                          userCode: generateCodeResponse['user_code']
+                                                        ),   
+                                                      ),
+                                                    );
+                                                }
+                                               );
+                                            } else {
+                                              // Mostrar un mensaje de error si el servicio falla para Login por primera vez
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Algo salió mal. Inténtalo de nuevo en unos momentos.'),
+                                                ),
+                                              );
+                                            }
+                                      } else {
+                                      // Si no es Login por primera vez y es Login =200 => navegamos a Home
                                                 WidgetsBinding.instance.addPostFrameCallback((_) {
                                                     Navigator.pushReplacement(
                                                       context,
@@ -393,10 +437,41 @@ class _LoginScreenState extends State<LoginScreen> {
                                                     );
                                                 }
                                                );
-                                              } else{
-                                                  setState(() {
-                                                      _showErrorMessage = true;
+                                      } //end else no es Login por primera vez=> navegamos a Home*/
+                                              } else{ //error en el servicio de login no es un 200                                              
+                                                    final int responseStatusCode = loginResponse['error'];
+                                                    // Manejo de errores
+                                                    _errorMessage= handleLoginError(responseStatusCode); // Llama a la función que maneja los errores
+                                                  _showErrorMessagePassword = false;
+                                                  _showErrorMessageEmail = false;
+                                                  if(responseStatusCode == 401){
+                                                    setState(() {
+                                                      _showErrorMessagePassword = true;
                                                     });
+                                                  } else if(responseStatusCode == 452 || responseStatusCode == 550){
+                                                     setState(() {
+                                                      _showErrorMessageEmail = true;
+                                                    });
+                                                  } else { ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(
+                                                      content: Row(
+                                                        children: const [
+                                                          Icon(Icons.warning, color: Colors.red, size: 16),
+                                                          SizedBox(width: 8),
+                                                          Expanded(
+                                                            child: Text('Algo salió mal. Inténtalo de nuevo en unos momentos.'),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      backgroundColor: const Color(0xFF4D4D4D), // Fondo negro como en la imagen
+                                                      behavior: SnackBarBehavior.floating, 
+                                                          margin: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 20.0), // Centrar horizontalmente y ajustar verticalmente
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
+                                                          ),// Flotante como en la imagen
+                                                      ),
+                                                    );    
+                                                } 
                                               }
                                             }
                                           },

@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../APIService/api_service.dart';
 import '../ChangeCreateNewPassword/create_new_password_screen.dart';
 import '../Common/commonFunctions.dart';
-import 'package:mi_app/ResetPassword/send_reset_code_service.dart';
+
 
 // Importa la pantalla ChangePassword
 
+// ignore: must_be_immutable
 class SetCodeVerificationScreen extends StatefulWidget {
   final String email;
   String token;
@@ -29,6 +31,8 @@ class _SetCodeVerificationScreenState extends State<SetCodeVerificationScreen> {
   int _remainingTime = 900; // Tiempo en segundos
   late Timer _timer;
 
+  bool _showErrorMessageCode = false;
+
   //6 CodeTexts
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   final List<TextEditingController> _controllers =
@@ -40,6 +44,7 @@ class _SetCodeVerificationScreenState extends State<SetCodeVerificationScreen> {
     token = widget.token;
     userCode = widget.userCode;
     obfuscatedEmail = CommonFunctions.obfuscateEmail(widget.email);
+    userCodeAsString = userCodeScreenNoObfuscated.join();
     startTimer();
   }
 
@@ -76,10 +81,17 @@ class _SetCodeVerificationScreenState extends State<SetCodeVerificationScreen> {
     super.dispose();
   }
 
-  //void _onFieldChange() {setState(() {});}// Cada vez que cambian los campos, se reconstruye la UI
-  
+    void _onFieldChange() {
+    // Cada vez que cambian los campos, se reconstruye la UI
+      setState(() {
+        _showErrorMessageCode = false;
+      });
+    }
 
+  late String userCodeAsString;
 
+  bool get _allCodeFilled =>
+      _controllers.every((controller) => controller.text.isNotEmpty) && _remainingTime > 2;
   @override
   Widget build(BuildContext context) {
         // -------------------------
@@ -107,16 +119,21 @@ class _SetCodeVerificationScreenState extends State<SetCodeVerificationScreen> {
     final Color buttonInactiveColor = Colors.grey.shade600;
     final Color buttonInactiveTextColor = Colors.grey.shade300;
 
-    // Determinar si el email no es vacio y está bien formado
-    final bool emailFieldWellDoneFilled = true;
+    // Determinar si los 6 digitos no están vacios 
+    final bool allCodeFilled = _allCodeFilled;
 
     // Definir los colores actuales del botón según estado
-    final Color currentButtonColor = emailFieldWellDoneFilled ? buttonActiveColor : buttonInactiveColor;
-    final Color currentButtonTextColor = emailFieldWellDoneFilled ? buttonActiveTextColor : buttonInactiveTextColor;
+    final Color currentButtonColor = allCodeFilled ? buttonActiveColor : buttonInactiveColor;
+    final Color currentButtonTextColor = allCodeFilled ? buttonActiveTextColor : buttonInactiveTextColor;
     
     // Calcular minutos y segundos restantes
     final int minutes = _remainingTime ~/ 60;
     final int seconds = _remainingTime % 60;
+
+    
+      if (CommonFunctions.isValidUserCode(userCodeAsString) && userCodeAsString == widget.userCode && _remainingTime > 0){
+        _showErrorMessageCode  = true;
+      }              
 return Scaffold(
       // El fondo degradado ocupa toda la pantalla
       body: Container(
@@ -270,26 +287,49 @@ return Scaffold(
               ),
             ),
 //-------------------------------------------------------                             
-                              // Timer: 'Tu código de seguridad vence en: 00:45'
+     // Timer: 'Tu código de seguridad vence en: 00:45'
             Center(
               child: Padding(
                 padding: EdgeInsets.only(bottom: 24.0),
                 child: Text(
-                  'Tu código de seguridad vence en: ${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
+                  _remainingTime > 0
+                    ? 'Tu código de seguridad vence en: ${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'
+                    : 'Tu código de seguridad ha vencido',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white,
+                     color: _remainingTime > 0 ? Colors.white : Color(0xFFFFF7E5),
                     fontSize: 18,
                     fontWeight: FontWeight.normal,
                   ),
                 ),
               ),
             ),
+            // Si el código es incorrecto, muestra el mensaje de error
+            if (_showErrorMessageCode)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 24.0),
+                    child: Column(
+                      children: const [
+                        Text(
+                          'El código que escribiste es incorrecto.\nInténtalo de nuevo.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                      ],
+                    ),
+                  ),
+                ),           
             ],
           ),
         ),
       ),
-                      // 2) Botón “Continuar” , dentro del contenedor negro
+        // 2) Botón “Continuar” , dentro del contenedor negro
           Padding(
             padding: const EdgeInsets.only(top: 5.0, left: 24.0,right: 24.0, bottom: 24.0),
             //padding: const EdgeInsets.all(24.0),
@@ -316,26 +356,7 @@ return Scaffold(
                           );
                     } //else codigo incorrecto
                 else {
-                    // Mostrar SnackBar: código incorrecto
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: const [
-                            Icon(Icons.warning, color: Color.fromARGB(255, 255, 219, 166)),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: Text('Código incorrecto'),
-                            ),
-                          ],
-                        ),
-                        backgroundColor: const Color(0xFF4D4D4D), // Fondo negro como en la imagen
-                        behavior: SnackBarBehavior.floating, 
-                            margin: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 20.0), // Centrar horizontalmente y ajustar verticalmente
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
-                            ),// Flotante como en la imagen
-                      ),
-                    );
+                    _showErrorMessageCode = true;
                   }
                 },
 //--------------------------------------------------------------------       
@@ -368,11 +389,12 @@ return Scaffold(
                             ),
                             // El botón siempre tiene onPressed,
                             // pero si no están los campos llenos => SnackBar
-                            onPressed: () async {
-                                  final sendResetCodeResponse = await sendResetCode(widget.email);
-                                  if (sendResetCodeResponse != null) {
-                                    widget.token = sendResetCodeResponse.token;
-                                    widget.userCode = sendResetCodeResponse.userCode;
+                            onPressed: () async {//apiService.resetPassword
+                            final apiService = ApiService();
+                                  final sendResetCodeResponse = await apiService.resetPassword(widget.email);
+                                  if (!sendResetCodeResponse !.containsKey('error')) {
+                                    widget.token = sendResetCodeResponse['token'];
+                                    widget.userCode = sendResetCodeResponse['user_code'];
                                         // Mostrar SnackBar de éxito
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
@@ -403,7 +425,7 @@ return Scaffold(
                                         builder: (context) => SetCodeVerificationScreen(
                                           email: widget.email,
                                           token: widget.token,
-                                          userCode: sendResetCodeResponse.userCode, // Pasar el nuevo valor de userCode
+                                          userCode: sendResetCodeResponse['user_code'], // Pasar el nuevo valor de userCode
                                         ),
                                       ),
                                     );
