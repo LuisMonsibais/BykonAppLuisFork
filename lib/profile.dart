@@ -121,7 +121,7 @@ class ProfileScreen extends StatelessWidget {
                             User.instancia?.jobPosition ?? 'job',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
