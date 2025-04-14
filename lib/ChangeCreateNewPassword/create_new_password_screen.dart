@@ -237,7 +237,7 @@ return Scaffold(
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
-                                            'Debe tener una mayúscula, 8 caracteres mínimo con letras y números y un caracter especial (“@#)',
+                                            'Debe tener una mayúscula, 8 caracteres mínimo con letras y números y un carácter especial (“@#)',
                                             style: TextStyle(  
                                                 color: !_hasInteractedWithNewPassword  && _newPasswordController.text.length<8
                                                   ? Colors.white // Si la contraseña es válida, el texto será verde

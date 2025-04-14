@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mi_app/Object/User.dart';
 import 'Common/commonFunctions.dart';
-import 'package:mi_app/Object/User.dart';
-import 'Common/commonFunctions.dart';
 import 'configuration.dart';
 
 class ProfileScreen extends StatelessWidget {
