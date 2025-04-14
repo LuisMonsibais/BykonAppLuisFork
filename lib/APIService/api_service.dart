@@ -86,7 +86,7 @@ Future<bool?> getBoolean(String key) async {
           // Guardar los pricipales datos del usuario en la clase User
                 User.initialize(
                   responseData['user']['area_name'],
-                  email, 
+                  responseData['user']['email'],
                   responseData['user']['full_name'], 
                   responseData['user']['job_position'],
                   //true,
