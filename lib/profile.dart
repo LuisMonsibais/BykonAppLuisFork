@@ -10,7 +10,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String me="Libertad Rivera";
+
     return DefaultTabController(
       length: 2, // "Mis cursos" y "Mis proyectos"
       child: Scaffold(
