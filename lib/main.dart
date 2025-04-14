@@ -5,7 +5,6 @@ import 'splash.dart';
 import 'vacaciones.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../Common/commonFunctions.dart';
-import 'OnboardingScreen/Onboarding_Screen.dart';
 
 /// Conviertes el main en async
 /*void*/Future<void>  main() async {

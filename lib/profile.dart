@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mi_app/Object/User.dart';
+import 'Common/commonFunctions.dart';
 import 'configuration.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -6,6 +8,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String me="Libertad Rivera";
     return DefaultTabController(
       length: 2, // "Mis cursos" y "Mis proyectos"
       child: Scaffold(
@@ -99,47 +102,50 @@ class ProfileScreen extends StatelessWidget {
                         child: const Icon(Icons.person, color: Colors.white),
                       ),
                       const SizedBox(width: 16),
+
+                      
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            '¡Hola {{User}}!',
-                            style: TextStyle(
+                            '¡Hola ${CommonFunctions.truncateToTwoTokens(User.instancia?.fullName ?? 'Usuario')}!',
+                            style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 24,
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            '{{Puesto en Bykon}}',
+                            User.instancia?.jobPosition ?? 'job',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            User.instancia?.email ?? '' ,// 'email'
                             style: TextStyle(
                               color: Colors.grey,
                               fontSize: 14,
                             ),
                           ),
                           Text(
-                            '{{mail}}',
+                            'Área: ${User.instancia?.areaName ?? ''}',// 'areaName'
                             style: TextStyle(
                               color: Colors.grey,
                               fontSize: 14,
                             ),
                           ),
                           Text(
-                            'Área: {{area}}',
+                            'Fecha de ingreso: ${User.instancia?.admissionDate ?? ''}',// 'admissionDate'
                             style: TextStyle(
                               color: Colors.grey,
                               fontSize: 14,
                             ),
                           ),
                           Text(
-                            'Fecha de ingreso: {{date}}',
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 14,
-                            ),
-                          ),
-                          Text(
-                            'Líder: {{name}}',
+                            'Líder: ${User.instancia?.areaLead ?? ''}',
                             style: TextStyle(
                               color: Colors.grey,
                               fontSize: 14,
