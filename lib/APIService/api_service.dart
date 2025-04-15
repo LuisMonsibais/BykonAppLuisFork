@@ -301,7 +301,7 @@ class ApiService {
 
   // Servicio 9: Logout
   Future<Map<String, dynamic>?> logout() async {
-    final url = CommonFunctions.validateUrl('/api/auth/v1/logout');
+    final url = CommonFunctions.validateUrl('exit');
     final accessToken = await getToken('access_token');
     print('Access Token: $accessToken');
 
