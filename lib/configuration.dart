@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// Importa tu pantalla de cambiar contraseña
+import '../APIService/api_service.dart';
 import 'changepassword.dart'; // Ajusta la ruta según tu estructura de archivos
 
 class ConfigurationScreen extends StatefulWidget {
@@ -14,10 +14,12 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   bool isBiometricEnabled = true;
   bool isNotificationsEnabled = true;
 
+  // Instancia del servicio API
+  final ApiService _apiService = ApiService();
+
   @override
   Widget build(BuildContext context) {
     // ------------------- PARÁMETROS DE ESTILO -------------------
-    // Degradado de fondo
     final LinearGradient backgroundGradient = const LinearGradient(
       colors: [
         Color(0xFF33004C), // Morado oscuro
@@ -27,22 +29,18 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
       end: Alignment.bottomRight,
     );
 
-    // AppBar personalizado
     final Color appBarColor = Colors.black;
     final Color appBarIconColor = Colors.white;
-    final double appBarBottomRadius = 10.0; // Borde redondeado inferior
+    final double appBarBottomRadius = 10.0;
     final String appBarTitle = 'Configuración';
     final double appBarTitleSize = 20.0;
     final Color appBarTitleColor = Colors.white;
 
-    // **Espacio fijo** para que se vea el degradado
-    final double spaceBetweenAppBarAndContainer = 80.0; 
+    final double spaceBetweenAppBarAndContainer = 80.0;
 
-    // Contenedor negro (para las tarjetas)
-    final double containerTopRadius = 16.0;  
+    final double containerTopRadius = 16.0;
     final Color containerColor = Colors.black;
 
-    // Tarjetas
     final Color cardBackgroundColor = const Color(0xFF1C1C1C);
     final double cardBorderRadius = 8.0;
     final double cardPadding = 16.0;
@@ -51,13 +49,11 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     final Color textColor = Colors.white;
     final double textSize = 18.0;
 
-    // Switch
     final Color switchActiveColor = Colors.white;
     final Color switchActiveTrackColor = const Color(0xFF9E00FF);
     final Color switchInactiveThumbColor = Colors.white;
     final Color switchInactiveTrackColor = Colors.grey;
 
-    // Botón “Cerrar sesión”
     final Color buttonBackgroundColor = Colors.black;
     final Color buttonTextColor = const Color.fromARGB(255, 242, 224, 254);
     final double buttonFontSize = 18.0;
@@ -68,16 +64,13 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     // ------------------------------------------------------------
 
     return Scaffold(
-      // Quitamos color sólido para mostrar el degradado
       body: Container(
         decoration: BoxDecoration(
           gradient: backgroundGradient,
         ),
         child: Column(
           children: [
-            // ------------------------------------------------------------
-            // AppBar "Personalizado" con bordes redondeados abajo
-            // ------------------------------------------------------------
+            // AppBar personalizado
             ClipRRect(
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(appBarBottomRadius),
@@ -111,14 +104,9 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
               ),
             ),
 
-            // ------------------------------------------------------------
-            // Espacio fijo para que se vea el degradado
-            // ------------------------------------------------------------
             SizedBox(height: spaceBetweenAppBarAndContainer),
 
-            // ------------------------------------------------------------
             // Contenedor negro con bordes redondeados arriba
-            // ------------------------------------------------------------
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -130,7 +118,6 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                 ),
                 child: Column(
                   children: [
-                    // Scroll para las tarjetas
                     Expanded(
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.symmetric(
@@ -140,15 +127,13 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                         child: Column(
                           children: [
                             // Tarjeta 1: "Cambiar contraseña"
-                            // Envuelta en GestureDetector (o InkWell) para que sea clicable
                             GestureDetector(
                               onTap: () {
-                                // Navega a la pantalla de cambiar contraseña
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const ChangePasswordScreen(), 
+                                        const ChangePasswordScreen(),
                                   ),
                                 );
                               },
@@ -283,7 +268,69 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                             padding: EdgeInsets.all(buttonPadding),
                           ),
                           onPressed: () {
-                            // Maneja aquí la acción de cerrar sesión
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16.0),
+                                  ),
+                                  backgroundColor: containerColor,
+                                  title: Row(
+                                    children: [
+                                      Icon(Icons.info, color: iconColor),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Cerrar sesión',
+                                        style: TextStyle(color: textColor),
+                                      ),
+                                    ],
+                                  ),
+                                  content: Text(
+                                    '¿Quieres cerrar tu sesión en este dispositivo?',
+                                    style: TextStyle(color: textColor),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text(
+                                        'Cancelar',
+                                        style:
+                                            TextStyle(color: buttonTextColor),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        Navigator.of(context).pop();
+                                        final result =
+                                            await _apiService.logout();
+                                        if (result != null &&
+                                            result.containsKey('message')) {
+                                          Navigator.of(context)
+                                              .pushNamedAndRemoveUntil(
+                                                  '/login', (route) => false);
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                  'Error al cerrar sesión. Inténtalo de nuevo.'),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      child: Text(
+                                        'Cerrar sesión',
+                                        style:
+                                            TextStyle(color: buttonTextColor),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           },
                           child: Text(
                             'Cerrar sesión',
