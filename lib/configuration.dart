@@ -267,70 +267,8 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                             ),
                             padding: EdgeInsets.all(buttonPadding),
                           ),
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16.0),
-                                  ),
-                                  backgroundColor: containerColor,
-                                  title: Row(
-                                    children: [
-                                      Icon(Icons.info, color: iconColor),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Cerrar sesión',
-                                        style: TextStyle(color: textColor),
-                                      ),
-                                    ],
-                                  ),
-                                  content: Text(
-                                    '¿Quieres cerrar tu sesión en este dispositivo?',
-                                    style: TextStyle(color: textColor),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text(
-                                        'Cancelar',
-                                        style:
-                                            TextStyle(color: buttonTextColor),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        Navigator.of(context).pop();
-                                        final result =
-                                            await _apiService.logout();
-                                        if (result != null &&
-                                            result.containsKey('message')) {
-                                          Navigator.of(context)
-                                              .pushNamedAndRemoveUntil(
-                                                  '/login', (route) => false);
-                                        } else {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                  'Error al cerrar sesión. Inténtalo de nuevo.'),
-                                            ),
-                                          );
-                                        }
-                                      },
-                                      child: Text(
-                                        'Cerrar sesión',
-                                        style:
-                                            TextStyle(color: buttonTextColor),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
+                          onPressed: () async {
+                            await _apiService.logout();
                           },
                           child: Text(
                             'Cerrar sesión',

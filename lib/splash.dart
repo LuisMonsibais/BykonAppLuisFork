@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:mi_app/Login/login_screen.dart';
-import 'OnboardingScreen/Onboarding_Screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// Importa tu main.dart para acceder a HomeScreen
-// Ajusta la ruta si estás en otra carpeta
+import 'Login/login_screen.dart';
+import 'OnboardingScreen/Onboarding_Screen.dart';
+import 'main.dart'; 
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,29 +16,43 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkOnboardingStatus();
+    _checkOnboardingAndAuthentication();
   }
 
-  Future<void> _checkOnboardingStatus() async {
+  Future<void> _checkOnboardingAndAuthentication() async {
     // Obtén una instancia de SharedPreferences
     final prefs = await SharedPreferences.getInstance();
 
     // Verifica si el usuario ya ha visto el onboarding
     final bool hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
 
+    // Verifica si el usuario está autenticado
+    final bool isLoggedIn = prefs.containsKey('access_token');
+
     // Redirige según el estado
     Timer(const Duration(seconds: 3), () {
-      if (hasSeenOnboarding) {
-        // Si ya vio el onboarding, redirige a Login
+      if (!hasSeenOnboarding) {
+        // Si no ha visto el onboarding, redirige a OnboardingScreen
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+        );
+      } else if (isLoggedIn) {
+        // Si está autenticado, redirige a HomeScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const HomeScreen(
+              name: 'Usuario', // Puedes reemplazar con datos reales
+              jobPosition: 'Puesto',
+            ),
+          ),
         );
       } else {
-        // Si no lo ha visto, redirige a Onboarding
+        // Si no está autenticado, redirige a LoginScreen
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => OnboardingScreen()),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       }
     });

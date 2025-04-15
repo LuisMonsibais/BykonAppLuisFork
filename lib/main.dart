@@ -5,17 +5,14 @@ import 'splash.dart';
 import 'vacaciones.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../Common/commonFunctions.dart';
+import 'Login/login_screen.dart';
+import '../APIService/api_service.dart';
 
 /// Conviertes el main en async
-/*void*/Future<void>  main() async {
-  /// Aseguramos la inicialización de bindings
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  /// Inicializamos el formateo de fechas para 'es' (o el idioma que necesites)
   await initializeDateFormatting('es', null);
-
-await dotenv.load(fileName: ".env"); // Cargar variables de entorno
-  /// Ahora corremos la app
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -26,18 +23,36 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const SplashScreen(), // Cambiar a OnboardingScreen() para la pantalla de carga
+      home: const SplashScreen(),
     );
   }
 }
 
-
 class HomeScreen extends StatelessWidget {
-
   final String name;
   final String jobPosition;
 
- const HomeScreen({super.key, required this.name, required this.jobPosition}); 
+  const HomeScreen({super.key, required this.name, required this.jobPosition});
+
+  // Método para manejar el cierre de sesión
+  Future<void> _handleLogout(BuildContext context) async {
+    final apiService = ApiService();
+    final result = await apiService.logout();
+
+    if (result != null && result['message'] == "Sesión cerrada con éxito") {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result?['message'] ?? 'Error al cerrar sesión'),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,11 +92,11 @@ class HomeScreen extends StatelessWidget {
                       fit: BoxFit.contain,
                     ),
                     GestureDetector(
-                      onTap: () {
-                        // Notificaciones
+                      onTap: () async {
+                        await _handleLogout(context); // Llama al método de cierre de sesión
                       },
                       child: const Icon(
-                        Icons.notifications, 
+                        Icons.notifications,
                         color: Colors.white,
                       ),
                     ),
@@ -131,18 +146,18 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(width: 20),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children:  [
+                        children: [
                           Text(
-                             '¡Hola ${CommonFunctions.truncateToTwoTokens(name)}!', 
-                            style: TextStyle(
+                            '¡Hola ${CommonFunctions.truncateToTwoTokens(name)}!',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                             jobPosition, 
-                            style: TextStyle(
+                            jobPosition,
+                            style: const TextStyle(
                               color: Colors.grey,
                               fontSize: 14,
                             ),
@@ -171,11 +186,9 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 child: SingleChildScrollView(
-                  // Ponle el padding que gustes
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Título: ¿Qué quieres hacer hoy?
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 32),
                         child: Text(
@@ -188,8 +201,6 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-
-               // Fila de íconos
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
@@ -213,8 +224,6 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 32),
-
-                      // Título: Próximos eventos
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
@@ -227,8 +236,6 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 18),
-
-                      // Contenedor de eventos
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Container(
@@ -255,8 +262,6 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-
-                      // Título: Entérate
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
@@ -269,8 +274,6 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-
-                      // Contenedor "Entérate"
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Container(
@@ -297,9 +300,6 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      // ------------
-      // BottomNav con bordes redondeados
-      // ------------
       bottomNavigationBar: ClipRRect(
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(24),

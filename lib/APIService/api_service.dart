@@ -300,34 +300,46 @@ class ApiService {
   }
 
     // Servicio 9: Logout
-  Future<Map<String, dynamic>?> logout() async {
-    final url = CommonFunctions.validateUrl('/api/auth/v1/logout');
-    final accessToken = await getToken('access_token');
-    print('Access Token: $accessToken');
+Future<Map<String, dynamic>?> logout() async {
+  final url = CommonFunctions.validateUrl('/api/auth/v1/logout');
+  final accessToken = await getToken('access_token');
+  print('Access Token: $accessToken');
 
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final storage = FlutterSecureStorage();
-        await storage.delete(key: 'access_token');
-        await storage.delete(key: 'refresh_token');
-        return {"message": "Sesión cerrada con éxito"};
-      } else {
-        return {"error": response.statusCode};
-      }
-    } catch (e) {
-      print('Error en logout: $e');
-      return {"error": 400};
-    }
+  if (accessToken == null) {
+    print('Error: No se encontró un token de acceso.');
+    return {"error": "No se encontró un token de acceso"};
   }
+
+  try {
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      // Elimina los tokens almacenados de forma segura
+      final storage = FlutterSecureStorage();
+      await storage.delete(key: 'access_token');
+      await storage.delete(key: 'refresh_token');
+      return {"message": "Sesión cerrada con éxito"};
+    } else {
+      // Manejo de errores del backend
+      final errorBody = jsonDecode(response.body);
+      return {
+        "error": response.statusCode,
+        "message": errorBody['message'] ?? 'Error desconocido al cerrar sesión'
+      };
+    }
+  } catch (e) {
+    // Manejo de errores de red o excepciones
+    print('Error en logout: $e');
+    return {"error": "Error de red o servidor"};
+  }
+}
 }
