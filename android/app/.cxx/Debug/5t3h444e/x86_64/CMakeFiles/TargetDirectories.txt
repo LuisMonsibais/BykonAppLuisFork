@@ -1,0 +1,2 @@
+/Users/luis/Documents/GitHub/BykonAppLuisFork/android/app/.cxx/Debug/5t3h444e/x86_64/CMakeFiles/edit_cache.dir
+/Users/luis/Documents/GitHub/BykonAppLuisFork/android/app/.cxx/Debug/5t3h444e/x86_64/CMakeFiles/rebuild_cache.dir

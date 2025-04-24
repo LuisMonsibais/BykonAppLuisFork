@@ -91,8 +91,8 @@ class ApiService {
           responseData['refresh_token'],
         );
 
-        await saveBoolean(
-            'remember_change_password', responseData['user']['remember_change_password']);
+        await saveBoolean('remember_change_password',
+            responseData['user']['remember_change_password']);
         await saveToken('access_token', responseData['access_token']);
         await saveToken('refresh_token', responseData['refresh_token']);
 
@@ -107,7 +107,8 @@ class ApiService {
 
   // Servicio 2: Reset Password
   Future<Map<String, dynamic>?> resetPassword(String email) async {
-    final url = CommonFunctions.validateUrl('/api/reset-password/v1/reset-code');
+    final url =
+        CommonFunctions.validateUrl('/api/reset-password/v1/reset-code');
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -129,8 +130,10 @@ class ApiService {
   }
 
   // Servicio 3: Create Password From ResetPassword
-  Future<Map<String, dynamic>?> passwordChange(String token, String userCode, String newPassword) async {
-    final url = CommonFunctions.validateUrl('/api/reset-password/v1/validate-change');
+  Future<Map<String, dynamic>?> passwordChange(
+      String token, String userCode, String newPassword) async {
+    final url =
+        CommonFunctions.validateUrl('/api/reset-password/v1/validate-change');
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -157,7 +160,8 @@ class ApiService {
 
   // Servicio 4: Generate-code From Cambiar Password
   Future<Map<String, dynamic>?> generateCodeChangePassword() async {
-    final url = CommonFunctions.validateUrl('/api/change-password/v1/generate-code');
+    final url =
+        CommonFunctions.validateUrl('/api/change-password/v1/generate-code');
     final accessToken = await getToken('access_token');
     try {
       final response = await http.get(
@@ -182,7 +186,8 @@ class ApiService {
   // Servicio 5: Validate & Change Password
   Future<Map<String, dynamic>?> validateChangePassword(
       String token, String userCode, String newPassword) async {
-    final url = CommonFunctions.validateUrl('/api/change-password/v1/validate-change');
+    final url =
+        CommonFunctions.validateUrl('/api/change-password/v1/validate-change');
     final accessToken = await getToken('access_token');
     try {
       final response = await http.post(
@@ -211,7 +216,8 @@ class ApiService {
 
   // Servicio 6: Get All Incidents By User
   Future<List<Map<String, dynamic>>?> getAllIncidentsByUser() async {
-    final url = CommonFunctions.validateUrl('/api/incidents/v1/user/allIncidents');
+    final url =
+        CommonFunctions.validateUrl('/api/incidents/v1/user/allIncidents');
     final accessToken = await getToken('access_token');
     try {
       final response = await http.get(
@@ -268,7 +274,8 @@ class ApiService {
     required int projectUuid,
     required String fiscalPeriod,
   }) async {
-    final url = CommonFunctions.validateUrl('/api/incidents/v1/user/requestIncident');
+    final url =
+        CommonFunctions.validateUrl('/api/incidents/v1/user/requestIncident');
     final accessToken = await getToken('access_token');
     try {
       final response = await http.post(
@@ -299,47 +306,88 @@ class ApiService {
     }
   }
 
-    // Servicio 9: Logout
-Future<Map<String, dynamic>?> logout() async {
-  final url = CommonFunctions.validateUrl('/api/auth/v1/logout');
-  final accessToken = await getToken('access_token');
-  print('Access Token: $accessToken');
+  // Servicio 9: Logout
+  Future<Map<String, dynamic>?> logout() async {
+    final url = CommonFunctions.validateUrl('/api/auth/v1/logout');
+    final accessToken = await getToken('access_token');
+    print('Access Token: $accessToken');
 
-  if (accessToken == null) {
-    print('Error: No se encontró un token de acceso.');
-    return {"error": "No se encontró un token de acceso"};
-  }
-
-  try {
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
-
-    if (response.statusCode == 200) {
-      // Elimina los tokens almacenados de forma segura
-      final storage = FlutterSecureStorage();
-      await storage.delete(key: 'access_token');
-      await storage.delete(key: 'refresh_token');
-      return {"message": "Sesión cerrada con éxito"};
-    } else {
-      // Manejo de errores del backend
-      final errorBody = jsonDecode(response.body);
-      return {
-        "error": response.statusCode,
-        "message": errorBody['message'] ?? 'Error desconocido al cerrar sesión'
-      };
+    if (accessToken == null) {
+      print('Error: No se encontró un token de acceso.');
+      return {"error": "No se encontró un token de acceso"};
     }
-  } catch (e) {
-    // Manejo de errores de red o excepciones
-    print('Error en logout: $e');
-    return {"error": "Error de red o servidor"};
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Elimina los tokens almacenados de forma segura
+        final storage = FlutterSecureStorage();
+        await storage.delete(key: 'access_token');
+        await storage.delete(key: 'refresh_token');
+        return {"message": "Sesión cerrada con éxito"};
+      } else {
+        // Manejo de errores del backend
+        final errorBody = jsonDecode(response.body);
+        return {
+          "error": response.statusCode,
+          "message":
+              errorBody['message'] ?? 'Error desconocido al cerrar sesión'
+        };
+      }
+    } catch (e) {
+      // Manejo de errores de red o excepciones
+      print('Error en logout: $e');
+      return {"error": "Error de red o servidor"};
+    }
   }
-}
+
+  //Servicio 10: mis cursos/mis proyectos
+  Future<Map<String, dynamic>?> getUserProfile({
+    required int projectsPage,
+    required int projectsPerPage,
+    required int trainingPage,
+    required int trainingPerPage,
+  }) async {
+    final url = CommonFunctions.validateUrl(
+        '/api/user/v1/get/profileData?projects_page=$projectsPage&projects_per_page=$projectsPerPage&training_page=$trainingPage&training_per_page=$trainingPerPage');
+    final accessToken =
+        await getToken('access_token'); // Recuperar el token de acceso
+
+    try {
+      print('URL: $url'); // Imprimir la URL para verificar que sea correcta
+      print('Access Token: $accessToken'); // Verificar el token de acceso
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+      print(
+          'Response status: ${response.statusCode}'); // Imprimir el código de estado
+      print(
+          'Response body: ${response.body}'); // Imprimir el cuerpo de la respuesta
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body); // Retornar la respuesta completa
+      } else {
+        print('Error: Código de estado ${response.statusCode}');
+        return null; // Manejo de errores del backend
+      }
+    } catch (e) {
+      print('Error al conectar con el backend: $e');
+      return null; // Manejo de errores de red
+    }
+  }
 }
